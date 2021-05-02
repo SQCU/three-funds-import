@@ -1,8 +1,10 @@
 import * as THREE from './build/three.module.js';
 import {OBJLoader} from './examples/jsm/loaders/OBJLoader.js';	//here goes nothing
-console.log("three-funds-next");
+import {MTLLoader} from './examples/jsm/loaders/MTLLoader.js';
+console.log("three-funds-import");
 //todo: import obj files at all
-//todo: implement armcar-scenegraph.jpg
+//UH OH OBJ FILES ARE JUNK
+//todo: import serialized data format
 
 function main()	{
 	//canvas block
@@ -27,15 +29,31 @@ function main()	{
 
 	//objloader trial
 	{
+	const mtlLoader = new MTLLoader();
 	const objLoader = new OBJLoader();
-	objLoader.load('threejs/models/AML/AML-60-trial.obj', (root) =>{
-		scene.add(root);
-		root.scale.set(5,5,5);
-		objectsman.push(root);
+	
+	mtlLoader.load('threejs/models/AML/AML-60.mtl',	(mtl) => {
+		mtl.preload();
+		objLoader.setMaterials(mtl);
+		objLoader.load('threejs/models/AML/AML-60.obj', (root) =>{
+			scene.add(root);
+			root.scale.set(5,5,5);
+			objectsman.push(root);
+		});
 	});
+	/*
+	mtlLoader.load('threejs/models/AML/AML-wheel.mtl',	(mtl) => {
+		mtl.preload();
+		objLoader.setMaterials(mtl);
+		objLoader.load('threejs/models/AML/AML-wheel.obj', (root) =>{
+			scene.add(root);
+			root.scale.set(5,5,5);
+			objectsman.push(root);
+		});
+	});
+	*/
 	}
-
-
+	
 	//this is just our basic baby light to give sense of space, offset from center
 	const licolor = 0xFFFFFF;
 	const liintensity = .7;
@@ -76,7 +94,7 @@ function render(time) {
 	//debug animation of just making everything spin
 	objectsman.forEach((obj) => {
 		obj.rotation.z = time;
-		obj.rotation.y = time;
+		//obj.rotation.y = time;
 	});
 	
 	renderer.render(scene, camera);
