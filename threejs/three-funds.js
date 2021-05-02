@@ -6,11 +6,12 @@ console.log("three-funds-import");
 //todo: import serialized data format
 //done
 //todo: scenegraph model into a sensible data structure
-//parsed
+//parsed, done
 //	todo: ingest aml-60, correctly parent each model to each other
 //tweaked aml-60, switching to aml-60-mkII
 //oh no the tires have no interior face
 //"patched" that particular issue, aren't I a card
+//switching to aml-60-mkIII
 
 
 function main()	{
@@ -24,7 +25,7 @@ function main()	{
 	const near = 0.1;
 	const far = 1000;	//v v far away
 	const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-	camera.position.set(0, 5, 0);
+	camera.position.set(0, 3, -4);
 	camera.up.set(0, 0, 1);	//no joke, the camera has to be told which direction is "up", instead of the default pos-y axis
 	camera.lookAt(0, 0, 0);	//using the look-at func, which uhh, does what you would think it would do I suppose
 	
@@ -33,6 +34,8 @@ function main()	{
 	scene.background = new THREE.Color(0xAAAABB);
 	
 	const objectsman = [];	//this is where all of our geometry gets dumped
+	
+	
 
 	//	🤢,🤮	traverses a scene graph and pukes the last entry in each level of a heirarchy
 	function dumper(obj, lines = [], isLast = true, prefix = '' ){
@@ -47,61 +50,47 @@ function main()	{
 		return lines;
 	}
 
-/*
+/*	output:
 	Scene ->Group<-
- 🤢turrent ->Mesh<-
- 🤢body ->Mesh<-
- 🤢manlet ->Mesh<-
- 🤢wheel-R-R ->Mesh<-
- 🤢wheel-R-L ->Mesh<-
- 🤢wheel-F-L ->Mesh<-
- 🤮wheel-F-R ->Mesh<-
+ 🤮sus ->Object3D<-
+  🤢wheels ->Object3D<-
+  | 🤢wheel-F-L ->Mesh<-
+  | 🤢wheel-F-R ->Mesh<-
+  | 🤢wheel-R-L ->Mesh<-
+  | 🤮wheel-R-R ->Mesh<-
+  🤮body ->Mesh<-
+   🤮turrent ->Mesh<-
+    🤮manlet ->Mesh<-
  */
+	
+	const armcars = [];
+	const wheels = [];
+	const turrents = [];
+	const manlets = [];
 	
 	{	//GLTFLoader trial, deprecated
 		const gltfLoader = new GLTFLoader();
-		const url = 'threejs/models/AML/AML-60-mkII.glb';
+		const url = 'threejs/models/AML/AML-60-mkIII.glb';
 		gltfLoader.load(url, (gltf) => {
 		const root = gltf.scene;
 		scene.add(root);	
-		objectsman.push(root);
+		armcars.push(root);
 		console.log(`name of ${root.name} and ${root.children.length} unexplored depth`);
 		console.log(dumper(root).join('\n'));
+		
+		wheels.push(root.getObjectByName('wheels'));
+		turrents.push(root.getObjectByName('turrent'));
+		manlets.push(root.getObjectByName('manlet'));
 		});
 		
 	}
 	
-	/*	honestly this might have been the wrong approach, edited model
-	const suspensionNode = new THREE.Object3D();
-	scene.add(suspensionNode);
-	objectsman.push(suspensionNode)
-	let chassis;
-	let turrent;
-	let manlet; 
-	let wheels = [];
-	
-	{	//use gltfloader to actually parent the stuff we want 
-		const gltfLoader = new GLTFLoader();
-		const url = 'threejs/models/AML/AML-60.glb';
-		gltfLoader.load(url, (gltf) => {
-			const root = gltf.scene;
-			chassis = root.getObjectByName('body');
-			suspensionNode.add(chassis);
-			turrent = root.getObjectByName('turrent');
-			chassis.add(turrent);
-			manlet = root.getObjectByName('manlet');
-			turrent.add(manlet);
-			
-			
-		});
-	}
-	*/
 		
 	//this is just our basic baby light to give sense of space, offset from center
 	const licolor = 0xFFFFFF;
 	const liintensity = .7;
 	const light = new THREE.DirectionalLight(licolor, liintensity);
-	light.position.set(-1,2,5);	//lights default to a target of 0,0,0; moving its position preserves its target
+	light.position.set(1,2,-5);	//lights default to a target of 0,0,0; moving its position preserves its target
 	scene.add(light);
 	
 	
@@ -127,10 +116,26 @@ function render(time) {
 	}
 	
 	//debug animation of just making everything spin
-	objectsman.forEach((obj) => {
-		obj.rotation.x = time/7;
-		obj.rotation.y = time/23;
+	armcars.forEach((obj) => {
+		obj.position.x = Math.sin(time);
+		obj.position.z = Math.cos(time);
 	});
+	
+	turrents.forEach((obj)	=>	{	//y governs traverse
+		obj.rotation.y = time/3;	
+	});
+	
+	manlets.forEach((obj) => {
+		obj.rotation.y = Math.sin(time);
+	});
+	
+	wheels.forEach((obj)	=> {
+		obj.children.forEach((wheel) => {
+			wheel.rotation.z=-time;
+		});
+	});
+
+	
 	
 	renderer.render(scene, camera);
 	requestAnimationFrame(render);
