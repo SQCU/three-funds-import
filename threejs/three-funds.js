@@ -6,6 +6,12 @@ console.log("three-funds-import");
 //todo: import serialized data format
 //done
 //todo: scenegraph model into a sensible data structure
+//parsed
+//	todo: ingest aml-60, correctly parent each model to each other
+//tweaked aml-60, switching to aml-60-mkII
+//oh no the tires have no interior face
+//"patched" that particular issue, aren't I a card
+
 
 function main()	{
 	//canvas block
@@ -40,11 +46,21 @@ function main()	{
 		});
 		return lines;
 	}
+
+/*
+	Scene ->Group<-
+ 🤢turrent ->Mesh<-
+ 🤢body ->Mesh<-
+ 🤢manlet ->Mesh<-
+ 🤢wheel-R-R ->Mesh<-
+ 🤢wheel-R-L ->Mesh<-
+ 🤢wheel-F-L ->Mesh<-
+ 🤮wheel-F-R ->Mesh<-
+ */
 	
-	
-	{	//GLTFLoader trial
+	{	//GLTFLoader trial, deprecated
 		const gltfLoader = new GLTFLoader();
-		const url = 'threejs/models/AML/AML-60.glb';
+		const url = 'threejs/models/AML/AML-60-mkII.glb';
 		gltfLoader.load(url, (gltf) => {
 		const root = gltf.scene;
 		scene.add(root);	
@@ -55,6 +71,31 @@ function main()	{
 		
 	}
 	
+	/*	honestly this might have been the wrong approach, edited model
+	const suspensionNode = new THREE.Object3D();
+	scene.add(suspensionNode);
+	objectsman.push(suspensionNode)
+	let chassis;
+	let turrent;
+	let manlet; 
+	let wheels = [];
+	
+	{	//use gltfloader to actually parent the stuff we want 
+		const gltfLoader = new GLTFLoader();
+		const url = 'threejs/models/AML/AML-60.glb';
+		gltfLoader.load(url, (gltf) => {
+			const root = gltf.scene;
+			chassis = root.getObjectByName('body');
+			suspensionNode.add(chassis);
+			turrent = root.getObjectByName('turrent');
+			chassis.add(turrent);
+			manlet = root.getObjectByName('manlet');
+			turrent.add(manlet);
+			
+			
+		});
+	}
+	*/
 		
 	//this is just our basic baby light to give sense of space, offset from center
 	const licolor = 0xFFFFFF;
@@ -87,8 +128,8 @@ function render(time) {
 	
 	//debug animation of just making everything spin
 	objectsman.forEach((obj) => {
-		obj.rotation.x = time/3;
-		obj.rotation.y = time/2;
+		obj.rotation.x = time/7;
+		obj.rotation.y = time/23;
 	});
 	
 	renderer.render(scene, camera);
