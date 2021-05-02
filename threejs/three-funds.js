@@ -1,10 +1,11 @@
 import * as THREE from './build/three.module.js';
-import {OBJLoader} from './examples/jsm/loaders/OBJLoader.js';	//here goes nothing
-import {MTLLoader} from './examples/jsm/loaders/MTLLoader.js';
+import {GLTFLoader}	from './examples/jsm/loaders/GLTFLoader.js';
 console.log("three-funds-import");
 //todo: import obj files at all
 //UH OH OBJ FILES ARE JUNK
 //todo: import serialized data format
+//done
+//todo: scenegraph model into a sensible data structure
 
 function main()	{
 	//canvas block
@@ -17,7 +18,7 @@ function main()	{
 	const near = 0.1;
 	const far = 1000;	//v v far away
 	const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-	camera.position.set(0, 35, 0);
+	camera.position.set(0, 5, 0);
 	camera.up.set(0, 0, 1);	//no joke, the camera has to be told which direction is "up", instead of the default pos-y axis
 	camera.lookAt(0, 0, 0);	//using the look-at func, which uhh, does what you would think it would do I suppose
 	
@@ -27,33 +28,19 @@ function main()	{
 	
 	const objectsman = [];	//this is where all of our geometry gets dumped
 
-	//objloader trial
-	{
-	const mtlLoader = new MTLLoader();
-	const objLoader = new OBJLoader();
 	
-	mtlLoader.load('threejs/models/AML/AML-60.mtl',	(mtl) => {
-		mtl.preload();
-		objLoader.setMaterials(mtl);
-		objLoader.load('threejs/models/AML/AML-60.obj', (root) =>{
-			scene.add(root);
-			root.scale.set(5,5,5);
-			objectsman.push(root);
+	{	//GLTFLoader trial
+		const gltfLoader = new GLTFLoader();
+		const url = 'threejs/models/AML/AML-60.glb';
+		gltfLoader.load(url, (gltf) => {
+		const root = gltf.scene;
+		scene.add(root);	
+		objectsman.push(root);
 		});
-	});
-	/*
-	mtlLoader.load('threejs/models/AML/AML-wheel.mtl',	(mtl) => {
-		mtl.preload();
-		objLoader.setMaterials(mtl);
-		objLoader.load('threejs/models/AML/AML-wheel.obj', (root) =>{
-			scene.add(root);
-			root.scale.set(5,5,5);
-			objectsman.push(root);
-		});
-	});
-	*/
+		
 	}
 	
+		
 	//this is just our basic baby light to give sense of space, offset from center
 	const licolor = 0xFFFFFF;
 	const liintensity = .7;
@@ -61,14 +48,6 @@ function main()	{
 	light.position.set(-1,2,5);	//lights default to a target of 0,0,0; moving its position preserves its target
 	scene.add(light);
 	
-	//add an axesHelper to visualize node direction
-	objectsman.forEach((node) => {
-		const axes = new THREE.AxesHelper();
-		axes.material.depthTest = false; //draw regardless of whether 'behind' other object
-		axes.renderOrder =1 ; //magic number to have axes drawn after all other objects in scene
-		node.add(axes);
-		
-	});
 	
 function render(time) {
 	time *= 0.001;
@@ -93,8 +72,8 @@ function render(time) {
 	
 	//debug animation of just making everything spin
 	objectsman.forEach((obj) => {
-		obj.rotation.z = time;
-		//obj.rotation.y = time;
+		obj.rotation.x = time/3;
+		obj.rotation.y = time/2;
 	});
 	
 	renderer.render(scene, camera);
