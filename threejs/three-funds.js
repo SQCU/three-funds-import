@@ -28,6 +28,19 @@ function main()	{
 	
 	const objectsman = [];	//this is where all of our geometry gets dumped
 
+	//	🤢,🤮	traverses a scene graph and pukes the last entry in each level of a heirarchy
+	function dumper(obj, lines = [], isLast = true, prefix = '' ){
+		const localPrefixer = isLast ? '🤮' : '🤢'; 		
+		lines.push(`${prefix}${prefix ? localPrefixer : ''}${obj.name || 'the-nameless-error'} ->${obj.type}<-`);
+		const newPrefix = prefix + (isLast ? ' ' : '| ');
+		const lastindex = obj.children.length -1;
+		obj.children.forEach((child, ndx) => {
+			const isLast = ndx === lastindex;	//honestly who can say what this comparison really does
+			dumper(child, lines, isLast, newPrefix);
+		});
+		return lines;
+	}
+	
 	
 	{	//GLTFLoader trial
 		const gltfLoader = new GLTFLoader();
@@ -36,6 +49,8 @@ function main()	{
 		const root = gltf.scene;
 		scene.add(root);	
 		objectsman.push(root);
+		console.log(`name of ${root.name} and ${root.children.length} unexplored depth`);
+		console.log(dumper(root).join('\n'));
 		});
 		
 	}
