@@ -33,10 +33,6 @@ function main()	{
 	const scene = new THREE.Scene();
 	scene.background = new THREE.Color(0xAAAABB);
 	
-	const objectsman = [];	//this is where all of our geometry gets dumped
-	
-	
-
 	//	🤢,🤮	traverses a scene graph and pukes the last entry in each level of a heirarchy
 	function dumper(obj, lines = [], isLast = true, prefix = '' ){
 		const localPrefixer = isLast ? '🤮' : '🤢'; 		
@@ -62,7 +58,7 @@ function main()	{
    🤮turrent ->Mesh<-
     🤮manlet ->Mesh<-
  */
-	
+	let armcarposition = new THREE.Vector3();
 	const armcars = [];
 	const wheels = [];
 	const turrents = [];
@@ -119,23 +115,31 @@ function render(time) {
 	armcars.forEach((obj) => {
 		obj.position.x = Math.sin(time);
 		obj.position.z = Math.cos(time);
+		
+		//armcarposition.x = obj.position.x;		//produces weird tilt
+		//armcarposition.y = obj.position.x;		//horizontal tracking
+		armcarposition.z = obj.position.z;			//tracks object up/down but seems to also zoome a bitte
+
 	});
 	
 	turrents.forEach((obj)	=>	{	//y governs traverse
 		obj.rotation.y = time/3;	
+		
 	});
 	
 	manlets.forEach((obj) => {
 		obj.rotation.y = Math.sin(time);
+
 	});
 	
 	wheels.forEach((obj)	=> {
 		obj.children.forEach((wheel) => {
 			wheel.rotation.z=-time;
 		});
-	});
 
-	
+	});
+		
+	camera.lookAt(armcarposition);
 	
 	renderer.render(scene, camera);
 	requestAnimationFrame(render);
